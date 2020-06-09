@@ -1,7 +1,7 @@
 VERSION 5.00
 Object = "{48E59290-9880-11CF-9754-00AA00C00908}#1.0#0"; "MSINET.OCX"
-Object = "{3B7C8863-D78F-101B-B9B5-04021C009402}#1.2#0"; "RICHTX32.OCX"
-Object = "{55473EAC-7715-4257-B5EF-6E14EBD6A5DD}#1.0#0"; "vbalprogbar6.ocx"
+Object = "{3B7C8863-D78F-101B-B9B5-04021C009402}#1.2#0"; "richtx32.ocx"
+Object = "{55473EAC-7715-4257-B5EF-6E14EBD6A5DD}#1.0#0"; "vbalProgBar6.OCX"
 Begin VB.Form frmMain 
    BackColor       =   &H00C00000&
    BorderStyle     =   0  'None
@@ -57,6 +57,7 @@ Begin VB.Form frmMain
       _Version        =   393217
       BackColor       =   0
       BorderStyle     =   0
+      Enabled         =   -1  'True
       ReadOnly        =   -1  'True
       TextRTF         =   $"frmMain.frx":669A
    End
@@ -126,61 +127,57 @@ Rem Programado por Shedark
 Private Sub Analizar()
 
     Dim i As Integer, iX As Integer, tX As Integer, DifX As Integer, dNum As String
-    
-    'lEstado.Caption = "Obteniendo datos..."
+    Dim actualizacionesTexto As String
+    actualizacionesTexto = " actualizaciones"
+
     Call addConsole("Buscando Actualizaciones...", 255, 255, 255, True, False)
-    Call Reproducir_WAV(App.Path & "\Wav\Revision.wav", SND_FILENAME)
     
-    iX = Inet1.OpenURL("http://tuhost.com/VEREXE.txt") 'Host
+    iX = Inet1.OpenURL("https://drive.google.com/u/1/uc?id=1GD8bfcz-2k917p8MnaB4SKZ4pHHpbbrs&export=download") 'VEREXE.txt
     tX = LeerInt(App.Path & "\INIT\Update.ini")
     
     DifX = iX - tX
-    
-    If Not (DifX = 0) Then
-    If MsgBox("Se descargarán " & DifX & "actualizaciones, ¿Continuar?", vbYesNo) = vbYes Then
-    ProgressBar1.Visible = True
-
+    If DifX > 0 Then
+        If DifX = 1 Then actualizacionesTexto = " actualización"
+        If MsgBox("Se descargarán " & DifX & actualizacionesTexto & ", ¿Continuar?", vbYesNo) = vbYes Then
+        ProgressBar1.Visible = True
+            
+            Dim downloadLinks As String
+            downloadLinks = Inet1.OpenURL("https://drive.google.com/u/1/uc?id=1xXjrrbFp03KTBF40lW_-T1LYAYdC3_Gn&export=download") 'Host
+            Dim linksList() As String
+            linksList = Split(downloadLinks, vbCrLf, , vbTextCompare)
+            
             Call addConsole("Iniciando, se descargarán " & DifX & " actualizaciones.", 200, 200, 200, True, False)   '>> Informacion
-        For i = 1 To DifX
-            Inet1.AccessType = icUseDefault
-            dNum = i + tX
-            
-            #If BuscarLinks Then 'Buscamos el link en el host (1)
-                Inet1.URL = Inet1.OpenURL("http://tuhost/Link" & dNum & ".txt") 'Host
-            #Else                'Generamos Link por defecto (0)
-                Inet1.URL = "http://tuhostFTP/Parche" & dNum & ".zip" 'Host
-            #End If
-            
-            Directory = App.Path & "\INIT\Parche" & dNum & ".zip"
-            bDone = False
-            dError = False
-            
-            'lURL.Caption = Inet1.URL
-            'lName.Caption = "Parche" & dNum & ".zip"
-            'lDirectorio.Caption = App.Path & "\"
+            For i = 1 To DifX
+                Inet1.AccessType = icUseDefault
+                dNum = i + tX
+                Inet1.URL = linksList(i - 1)
                 
-            frmMain.Inet1.Execute , "GET"
-            
-            Do While bDone = False
-            DoEvents
-            Loop
-            
-            If dError Then Exit Sub
-            
-            UnZip Directory, App.Path & "\"
-            Kill Directory
-        Next i
+                Directory = App.Path & "\INIT\Parche" & dNum & ".zip"
+                bDone = False
+                dError = False
+                    
+                frmMain.Inet1.Execute , "GET"
+                
+                Do While bDone = False
+                    DoEvents
+                Loop
+                
+                If dError Then Exit Sub
+                
+                UnZip Directory, App.Path & "\"
+                Kill Directory
+            Next i
+        End If
     End If
-     End If
+    
     Call GuardarInt(App.Path & "\INIT\Update.ini", iX)
     
     Image2.Enabled = True
     Call addConsole("Cliente actualizado correctamente.", 255, 255, 0, True, False)
-    Call Reproducir_WAV(App.Path & "\Wav\Actualizado.wav", SND_FILENAME)
     ProgressBar1.value = 0
 
 If MsgBox("¿Deseas Jugar?", vbYesNo) = vbYes Then
-    Call ShellExecute(Me.hWnd, "open", App.Path & "/NOMBREDELAO.exe", "", "", 1)
+    Call ShellExecute(Me.hWnd, "open", App.Path & "/RivendelAO.exe", "", "", 1)
     End
  Else
     End
@@ -189,46 +186,46 @@ End If
 End Sub
 
 Private Sub Form_Load()
-ProgressBar1.Picture = LoadPicture(App.Path & "\Graficos\AU_BarraVacia.jpg")
-Image2.Picture = LoadPicture(App.Path & "\Graficos\AU_Buscar_N.jpg")
-Image1.Picture = LoadPicture(App.Path & "\Graficos\AU_Salir_N.jpg")
-frmMain.Picture = LoadPicture(App.Path & "\Graficos\AU_Main.jpg")
-ProgressBar1.value = 0
-'ProgressBar1.Height = 0
+    ProgressBar1.Picture = LoadPicture(App.Path & "\Graficos\AU_BarraVacia.jpg")
+    Image2.Picture = LoadPicture(App.Path & "\Graficos\AU_Buscar_N.jpg")
+    Image1.Picture = LoadPicture(App.Path & "\Graficos\AU_Salir_N.jpg")
+    frmMain.Picture = LoadPicture(App.Path & "\Graficos\AU_Main.jpg")
+    ProgressBar1.value = 0
+    'ProgressBar1.Height = 0
 End Sub
 
 Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
-Image2.Picture = LoadPicture(App.Path & "\Graficos\AU_Buscar_N.jpg")
-Image1.Picture = LoadPicture(App.Path & "\Graficos\AU_Salir_N.jpg")
+    Image2.Picture = LoadPicture(App.Path & "\Graficos\AU_Buscar_N.jpg")
+    Image1.Picture = LoadPicture(App.Path & "\Graficos\AU_Salir_N.jpg")
 End Sub
 
 Private Sub Image1_Click()
-Image1.Picture = LoadPicture(App.Path & "\Graficos\AU_Salir_A.jpg")
-End
+    Image1.Picture = LoadPicture(App.Path & "\Graficos\AU_Salir_A.jpg")
+    End
 End Sub
 
 Private Sub Image1_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
-Image1.Picture = LoadPicture(App.Path & "\Graficos\AU_Salir_A.jpg")
+    Image1.Picture = LoadPicture(App.Path & "\Graficos\AU_Salir_A.jpg")
 End Sub
 
 Private Sub Image1_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
-Image1.Picture = LoadPicture(App.Path & "\Graficos\AU_Salir_I.jpg")
+    Image1.Picture = LoadPicture(App.Path & "\Graficos\AU_Salir_I.jpg")
 End Sub
 Private Sub Image2_Click()
-Image2.Enabled = False
-Image2.Picture = LoadPicture(App.Path & "\Graficos\AU_Buscar_A.jpg")
-Call Analizar
-
-'Call addConsole("Buscando Actualizaciones...", 255, 255, 255, True, False)
+    Image2.Enabled = False
+    Image2.Picture = LoadPicture(App.Path & "\Graficos\AU_Buscar_A.jpg")
+    Call Analizar
+    
+    'Call addConsole("Buscando Actualizaciones...", 255, 255, 255, True, False)
 
 End Sub
 
 Private Sub Image2_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
-Image2.Picture = LoadPicture(App.Path & "\Graficos\AU_Buscar_A.jpg")
+    Image2.Picture = LoadPicture(App.Path & "\Graficos\AU_Buscar_A.jpg")
 End Sub
 
 Private Sub Image2_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
-Image2.Picture = LoadPicture(App.Path & "\Graficos\AU_Buscar_I.jpg")
+    Image2.Picture = LoadPicture(App.Path & "\Graficos\AU_Buscar_I.jpg")
 End Sub
 
 Private Sub Inet1_StateChanged(ByVal State As Integer)
@@ -275,7 +272,7 @@ Private Sub Inet1_StateChanged(ByVal State As Integer)
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
-End
+    End
 End Sub
 
 Private Function LeerInt(ByVal Ruta As String) As Integer
