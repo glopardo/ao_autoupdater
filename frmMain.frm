@@ -57,7 +57,6 @@ Begin VB.Form frmMain
       _Version        =   393217
       BackColor       =   0
       BorderStyle     =   0
-      Enabled         =   -1  'True
       ReadOnly        =   -1  'True
       TextRTF         =   $"frmMain.frx":669A
    End
@@ -144,15 +143,15 @@ Private Sub Analizar()
             Dim downloadLinks As String
             downloadLinks = Inet1.OpenURL("https://drive.google.com/u/1/uc?id=1xXjrrbFp03KTBF40lW_-T1LYAYdC3_Gn&export=download") 'Host
             Dim linksList() As String
-            linksList = Split(downloadLinks, vbCrLf, , vbTextCompare)
+            linksList = Split(downloadLinks, ";")
             
             Call addConsole("Iniciando, se descargarán " & DifX & " actualizaciones.", 200, 200, 200, True, False)   '>> Informacion
-            For i = 1 To DifX
+            For i = DifX To 1 Step -1
                 Inet1.AccessType = icUseDefault
-                dNum = i + tX
+                'dNum = DifX
                 Inet1.URL = linksList(i - 1)
                 
-                Directory = App.Path & "\INIT\Parche" & dNum & ".zip"
+                Directory = App.Path & "\Parche" & i & ".zip"
                 bDone = False
                 dError = False
                     
