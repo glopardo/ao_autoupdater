@@ -131,7 +131,8 @@ Private Sub Analizar()
 
     Call addConsole("Buscando Actualizaciones...", 255, 255, 255, True, False)
     
-    iX = Inet1.OpenURL("https://drive.google.com/u/1/uc?id=1GD8bfcz-2k917p8MnaB4SKZ4pHHpbbrs&export=download") 'VEREXE.txt
+    'iX = Inet1.OpenURL("https://drive.google.com/u/1/uc?id=1GD8bfcz-2k917p8MnaB4SKZ4pHHpbbrs&export=download") 'VEREXE.txt
+    iX = Inet1.OpenURL("erivendelao:Riven871517@rivendelao.ucoz.net/autoupdater/VEREXE.txt") 'VEREXE.txt
     tX = LeerInt(App.Path & "\INIT\Update.ini")
     
     DifX = iX - tX
@@ -141,7 +142,7 @@ Private Sub Analizar()
         ProgressBar1.Visible = True
             
             Dim downloadLinks As String
-            downloadLinks = Inet1.OpenURL("https://drive.google.com/u/1/uc?id=1xXjrrbFp03KTBF40lW_-T1LYAYdC3_Gn&export=download") 'Host
+            downloadLinks = Inet1.OpenURL("erivendelao:Riven871517@rivendelao.ucoz.net/autoupdater/Links.txt") 'Links
             Dim linksList() As String
             linksList = Split(downloadLinks, ";")
             
@@ -149,12 +150,12 @@ Private Sub Analizar()
             For i = DifX To 1 Step -1
                 Inet1.AccessType = icUseDefault
                 'dNum = DifX
-                Inet1.URL = linksList(i - 1)
+                Inet1.url = linksList(i - 1)
                 
                 Directory = App.Path & "\Parche" & i & ".zip"
                 bDone = False
                 dError = False
-                    
+                Inet1.url = Replace(Inet1.url, "http://", "")
                 frmMain.Inet1.Execute , "GET"
                 
                 Do While bDone = False
