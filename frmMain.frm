@@ -57,6 +57,7 @@ Begin VB.Form frmMain
       _Version        =   393217
       BackColor       =   0
       BorderStyle     =   0
+      Enabled         =   -1  'True
       ReadOnly        =   -1  'True
       TextRTF         =   $"frmMain.frx":669A
    End
@@ -125,7 +126,7 @@ Rem Programado por Shedark
 
 Private Sub Analizar()
 
-    Dim i As Integer, iX As Integer, tX As Integer, DifX As Integer, dNum As String
+    Dim i, iX, tX, DifX, dNum, actualizacionesAplicadas As Integer
     Dim actualizacionesTexto As String
     actualizacionesTexto = " actualizaciones"
 
@@ -139,23 +140,26 @@ Private Sub Analizar()
     If DifX > 0 Then
         If DifX = 1 Then actualizacionesTexto = " actualización"
         If MsgBox("Se descargarán " & DifX & actualizacionesTexto & ", ¿Continuar?", vbYesNo) = vbYes Then
-        ProgressBar1.Visible = True
-            
+            ProgressBar1.Visible = True
+                
             Dim downloadLinks As String
             downloadLinks = Inet1.OpenURL("erivendelao:Riven871517@rivendelao.ucoz.net/autoupdater/Links.txt") 'Links
             Dim linksList() As String
             linksList = Split(downloadLinks, ";")
             
             Call addConsole("Iniciando, se descargarán " & DifX & " actualizaciones.", 200, 200, 200, True, False)   '>> Informacion
-            For i = DifX To 1 Step -1
+            For i = UBound(linksList) + 1 To DifX Step -1
+                
+                If actualizacionesAplicadas >= DifX Then Exit For
+                
                 Inet1.AccessType = icUseDefault
                 'dNum = DifX
-                Inet1.url = linksList(i - 1)
+                Inet1.URL = linksList(i - 1)
                 
                 Directory = App.Path & "\Parche" & i & ".zip"
                 bDone = False
                 dError = False
-                Inet1.url = Replace(Inet1.url, "http://", "")
+                Inet1.URL = Replace(Inet1.URL, "http://", "")
                 frmMain.Inet1.Execute , "GET"
                 
                 Do While bDone = False
@@ -166,22 +170,24 @@ Private Sub Analizar()
                 
                 UnZip Directory, App.Path & "\"
                 Kill Directory
+                
+                actualizacionesAplicadas = actualizacionesAplicadas + 1
             Next i
+            
+            Call GuardarInt(App.Path & "\INIT\Update.ini", iX)
+            Image2.Enabled = True
+            Call addConsole("Cliente actualizado correctamente.", 255, 255, 0, True, False)
         End If
     End If
     
-    Call GuardarInt(App.Path & "\INIT\Update.ini", iX)
-    
-    Image2.Enabled = True
-    Call addConsole("Cliente actualizado correctamente.", 255, 255, 0, True, False)
     ProgressBar1.value = 0
 
-If MsgBox("¿Deseas Jugar?", vbYesNo) = vbYes Then
-    Call ShellExecute(Me.hWnd, "open", App.Path & "/RivendelAO.exe", "", "", 1)
-    End
- Else
-    End
-End If
+    If MsgBox("¿Deseas Jugar?", vbYesNo) = vbYes Then
+        Call ShellExecute(Me.hWnd, "open", App.Path & "/RivendelAO.exe", "", "", 1)
+        End
+    Else
+        End
+    End If
 
 End Sub
 
